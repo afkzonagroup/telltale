@@ -8,6 +8,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [0.1.1] - 2026-11-08
 
+### Security
+
+- `DisclosureLogFile.open` refuses an existing log that its group or others can write; the new `permissions` option can restrict it to 0600 (`fix`) or keep it (`allow`) (#18).
+
 ### Changed
 
 - Development dependencies updated (#15); Dependabot groups minor and patch updates and ignores major versions (#14).
