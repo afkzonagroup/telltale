@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "afkzona-telltale"
-version = "0.1.0"
+version = "0.1.1"
 description = "Machine-readable XMP marking of AI-generated PNG, JPEG and WebP images (EU AI Act Article 50(2)). Pure Python, no dependencies."
 readme = "README.md"
 requires-python = ">=3.10"

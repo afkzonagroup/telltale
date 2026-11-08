@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-08
+
+### Changed
+
+- Development dependencies updated (#15); Dependabot groups minor and patch updates and ignores major versions (#14).
+- Release workflow skips versions already on npm.
+
 ## [0.1.0] - 2026-11-08
 
 ### Added
