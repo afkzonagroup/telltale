@@ -6,6 +6,25 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Cross-browser check: `npm run test:browser` runs the components and the
+  React and Vue wrappers in Playwright's Chromium, Firefox and WebKit
+  (rendering under a strict CSP, keyboard and focus, axe-core WCAG 2.1 A/AA,
+  320 px, server rendering plus hydration). CI runs one job per engine. All
+  checks pass in all three engines.
+
+### Fixed
+
+- React wrapper: `onShown` never ran when React hydrated server-rendered
+  markup, because the element reported `telltale-shown` before React attached
+  its listener. The wrapper now delivers that report once. The Vue wrapper
+  does the same when hydration starts after an asynchronous step.
+- `<ai-label>`: Escape did not close a details panel opened with the mouse in
+  Safari (WebKit), which does not focus a clicked button. Escape now closes
+  the panel wherever focus is; focus moves to the label only if nothing else
+  had it.
+
 ## [0.1.0] - 2026-11-08
 
 ### Added

@@ -43,15 +43,16 @@ PYTHONPATH=src .venv/bin/python -m unittest discover -s tests -t .
 
 ## Browser check
 
-`scripts/browser-check.mjs` loads the components in Chromium under a strict
-CSP, runs axe-core and takes screenshots. It needs `playwright-core` and
-`axe-core`, which are not dependencies of this package:
+`scripts/browser-check.mjs` runs the components and the React and Vue
+wrappers in Playwright's Chromium, Firefox and WebKit: rendering under a
+strict CSP, keyboard and focus, axe-core (WCAG 2.1 A and AA), 320 px reflow,
+and server-side rendering followed by hydration. CI runs one job per engine.
 
 ```sh
-npm run build
-PLAYWRIGHT_CORE=/path/to/node_modules/playwright-core \
-AXE_CORE=/path/to/node_modules/axe-core/axe.min.js \
-SHOTS=/tmp/telltale-shots node scripts/browser-check.mjs
+npx playwright-core install chromium firefox webkit   # once
+npm run test:browser                                  # all three engines
+npm run test:browser -- webkit                        # one engine
+SHOTS=../telltale-shots npm run test:browser          # with screenshots
 ```
 
 ## Commits
