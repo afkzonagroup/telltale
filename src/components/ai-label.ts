@@ -17,7 +17,9 @@ const OBSERVED = ['kind', 'lang', 'text', 'long-text', 'compact', 'details'] as 
  * - The label text is its accessible name. With `compact`, only the badge is
  *   visible and the full text stays available to assistive technology.
  * - With `details`, the label becomes a button that opens a panel with the
- *   long text (WAI-ARIA disclosure pattern). Escape and a click outside close it.
+ *   long text (WAI-ARIA disclosure pattern). Escape and a click outside close
+ *   it. Escape works wherever focus is, because Safari does not focus a
+ *   button on click.
  * - Put an official EU icon in the `icon` slot if you use one; the default is
  *   a text badge.
  *
@@ -48,6 +50,17 @@ export class AiLabelElement extends BaseElement {
       e.stopPropagation();
       this.close(true);
     }
+  };
+  /**
+   * Escape pressed while focus is outside the label. Safari (and WebKit on
+   * macOS) does not focus a button on click, so after opening the panel with
+   * the mouse, focus is still on the page. Focus moves to the label button
+   * only if nothing else had it.
+   */
+  readonly #onDocKey = (e: KeyboardEvent): void => {
+    if (e.key !== 'Escape' || !this.#open || e.composedPath().includes(this)) return;
+    const active = this.ownerDocument.activeElement;
+    this.close(active === null || active === this.ownerDocument.body);
   };
 
   constructor() {
@@ -80,8 +93,7 @@ export class AiLabelElement extends BaseElement {
   disconnectedCallback(): void {
     this.#connected = false;
     this.removeEventListener('keydown', this.#onKey);
-    this.ownerDocument.removeEventListener('pointerdown', this.#onDocPointer, true);
-    this.#open = false;
+    this.#setOpen(false);
   }
 
   attributeChangedCallback(): void {
@@ -110,8 +122,13 @@ export class AiLabelElement extends BaseElement {
   #setOpen(open: boolean): void {
     this.#open = open;
     const doc = this.ownerDocument;
-    if (open) doc.addEventListener('pointerdown', this.#onDocPointer, true);
-    else doc.removeEventListener('pointerdown', this.#onDocPointer, true);
+    if (open) {
+      doc.addEventListener('pointerdown', this.#onDocPointer, true);
+      doc.addEventListener('keydown', this.#onDocKey);
+    } else {
+      doc.removeEventListener('pointerdown', this.#onDocPointer, true);
+      doc.removeEventListener('keydown', this.#onDocKey);
+    }
   }
 
   #emitToggle(): void {

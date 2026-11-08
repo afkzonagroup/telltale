@@ -305,12 +305,42 @@ describe('<ai-label>', () => {
     expect(e.shadowRoot!.activeElement).toBe(q(e, 'toggle'));
   });
 
+  // Regression: WebKit (Safari) does not focus a button on click, so after a
+  // mouse click focus stays on the page and Escape never reached the label.
+  it('closes on Escape when focus is on the page, as after a click in Safari', () => {
+    const e = label({ details: '' });
+    q(e, 'toggle').click();
+    expect(e.open).toBe(true);
+    (document.activeElement as HTMLElement | null)?.blur();
+    expect(document.activeElement).toBe(document.body);
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }));
+    expect(e.open).toBe(false);
+    expect(e.shadowRoot!.activeElement).toBe(q(e, 'toggle'));
+  });
+
+  it('closes on Escape from elsewhere on the page without taking focus', () => {
+    const e = label({ details: '' });
+    const input = document.createElement('input');
+    document.body.append(input);
+    e.show();
+    input.focus();
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, composed: true }));
+    expect(e.open).toBe(true);
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }));
+    expect(e.open).toBe(false);
+    expect(document.activeElement).toBe(input);
+    // Closed: a later Escape is ignored.
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, composed: true }));
+    expect(e.open).toBe(false);
+  });
+
   it('removes document listeners when disconnected', () => {
     const e = label({ details: '' });
     e.show();
     const spy = vi.spyOn(document, 'removeEventListener');
     e.remove();
     expect(spy).toHaveBeenCalledWith('pointerdown', expect.any(Function), true);
+    expect(spy).toHaveBeenCalledWith('keydown', expect.any(Function));
     expect(e.open).toBe(false);
   });
 
