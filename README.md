@@ -495,10 +495,8 @@ use another name ([TRADEMARKS.md](TRADEMARKS.md)).
 
 ## Enterprise
 
-AFKzona Group offers, outside this repository: a hosted dashboard for
-disclosure logs, continuous monitoring of many sites, SSO/SAML, roles, audit
-evidence packs, a legal-update feed, and support with an SLA. Contact
-info@afkzonagroup.lt.
+MB AFKzona Group offers integration into your systems, custom connectors and
+features, and support agreements. Contact info@afkzonagroup.lt.
 
 ## Contributing
 
