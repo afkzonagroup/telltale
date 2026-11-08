@@ -33,12 +33,23 @@ export interface OpenLogFileOptions {
   readonly maxBytes?: number;
   /** Call fdatasync after every entry (slower, survives power loss). */
   readonly sync?: boolean;
+  /**
+   * What to do when an existing log file is writable by its group or by others, so another account
+   * could rewrite it: `refuse` (default) fails to open, `fix` restricts it to 0600, `allow` keeps it.
+   * Ignored on Windows, which has no POSIX mode bits.
+   */
+  readonly permissions?: 'refuse' | 'fix' | 'allow';
 }
+
+/** Group- or world-writable mode bits. */
+const SHARED_WRITE = 0o022;
+const PERMISSION_POLICIES: ReadonlySet<string> = new Set(['refuse', 'fix', 'allow']);
 
 /**
  * Append-only writer for a disclosure log file. One writer per file:
  * there is no cross-process locking. The existing file is verified on open.
- * New files are created with mode 0600.
+ * New files are created with mode 0600; an existing file that its group or others
+ * can write is refused unless `permissions` says otherwise.
  */
 export class DisclosureLogFile {
   readonly #fh: FileHandle;
@@ -57,7 +68,10 @@ export class DisclosureLogFile {
   /** Opens (or creates) a log file after checking the whole chain. */
   static async open(options: OpenLogFileOptions): Promise<DisclosureLogFile> {
     const own = ownProperties(options) as Partial<OpenLogFileOptions>;
-    const { dir, name, hmacKey, expectedHead, sync = false } = own;
+    const { dir, name, hmacKey, expectedHead, sync = false, permissions = 'refuse' } = own;
+    if (!PERMISSION_POLICIES.has(permissions)) {
+      throw new TelltaleError('INVALID_OPTION', 'permissions must be "refuse", "fix" or "allow".');
+    }
     const maxBytes = own.maxBytes ?? 256 * 1024 * 1024;
     if (typeof dir !== 'string') throw new TelltaleError('INVALID_OPTION', 'dir must be a string.');
     if (typeof name !== 'string' || !SAFE_NAME.test(name)) throw new TelltaleError('INVALID_OPTION', 'Unsafe log file name.');
@@ -81,6 +95,12 @@ export class DisclosureLogFile {
       const st = await fh.stat();
       if (!st.isFile()) throw new TelltaleError('INVALID_OPTION', 'Log path is not a regular file.');
       if (st.size > maxBytes) throw new TelltaleError('INPUT_TOO_LARGE', 'Log file is larger than maxBytes; rotate it.');
+      if (process.platform !== 'win32' && (st.mode & SHARED_WRITE) !== 0) {
+        if (permissions === 'refuse') {
+          throw new TelltaleError('INVALID_OPTION', 'Log file is writable by its group or by others; restrict it to 0600 or open it with permissions: "fix".');
+        }
+        if (permissions === 'fix') await fh.chmod(0o600);
+      }
       const buf = new Uint8Array(st.size);
       let off = 0;
       while (off < buf.length) {

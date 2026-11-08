@@ -395,7 +395,9 @@ console.log(result.ok, result.ok ? result.count : result.reason);
   `deriveSessionPseudonym(key, sessionId)` (stable per session, HMAC with a key
   you can rotate). A linkable pseudonym is still personal data under the GDPR.
 - `DisclosureLogFile` verifies the chain when it opens a file, creates files
-  with mode 0600, refuses symlinks, and supports one writer per file.
+  with mode 0600, refuses symlinks, and supports one writer per file. An
+  existing log that its group or others can write is refused unless you open it
+  with `permissions: 'fix'` (restrict to 0600) or `permissions: 'allow'`.
 - Telltale ships no HTTP endpoint. If browsers report `telltale-shown` events
   to your server, that endpoint is yours to protect: same-origin or CSRF
   check, rate limit, small body limit, and only the fields `append` accepts.
