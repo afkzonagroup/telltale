@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+import { appendFileSync, chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -286,5 +286,42 @@ describe('CLI', () => {
     const d = io();
     expect(await runCli(['verify-log', 'missing.jsonl'], d)).toBe(1);
     expect(d.err.join('')).toContain('ENOENT');
+  });
+});
+
+describe('DisclosureLogFile permissions of an existing file', () => {
+  let pdir: string;
+  beforeEach(() => {
+    pdir = mkdtempSync(join(tmpdir(), 'telltale-perm-'));
+  });
+  afterEach(() => {
+    rmSync(pdir, { recursive: true, force: true });
+  });
+  const shared = (): void => {
+    writeFileSync(join(pdir, 'log.jsonl'), '');
+    chmodSync(join(pdir, 'log.jsonl'), 0o666);
+  };
+
+  it.skipIf(process.platform === 'win32')('refuses a group- or world-writable log by default', async () => {
+    shared();
+    await expect(DisclosureLogFile.open({ dir: pdir, name: 'log.jsonl' })).rejects.toThrow(/writable by its group or by others/);
+  });
+
+  it.skipIf(process.platform === 'win32')('restricts it to 0600 with permissions: "fix"', async () => {
+    shared();
+    const f = await DisclosureLogFile.open({ dir: pdir, name: 'log.jsonl', permissions: 'fix' });
+    await f.close();
+    expect(statSync(join(pdir, 'log.jsonl')).mode & 0o777).toBe(0o600);
+  });
+
+  it.skipIf(process.platform === 'win32')('keeps it with permissions: "allow"', async () => {
+    shared();
+    const f = await DisclosureLogFile.open({ dir: pdir, name: 'log.jsonl', permissions: 'allow' });
+    await f.close();
+    expect(statSync(join(pdir, 'log.jsonl')).mode & 0o777).toBe(0o666);
+  });
+
+  it('rejects an unknown permissions value', async () => {
+    await expect(DisclosureLogFile.open({ dir: pdir, name: 'log.jsonl', permissions: 'loose' as unknown as 'allow' })).rejects.toThrow(/permissions must be/);
   });
 });
