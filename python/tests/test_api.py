@@ -87,7 +87,7 @@ class Api(unittest.TestCase):
         self.assertIsNone(detect_image_format(b"GIF89a"))
 
     def test_version(self) -> None:
-        self.assertEqual(telltale.__version__, "0.1.0")
+        self.assertEqual(telltale.__version__, "0.1.1")
 
 
 class Scanner(unittest.TestCase):

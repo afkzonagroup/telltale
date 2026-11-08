@@ -25,6 +25,9 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run build
+      - run: npm pack --dry-run --json > "$RUNNER_TEMP/pack.json"
+      - run: node scripts/check-pack.mjs "$RUNNER_TEMP/pack.json"
+      - run: npm run build
       - run: npm audit --omit=dev
 
   # Real-browser check of the components and the React and Vue wrappers,

@@ -1,6 +1,6 @@
 {
   "name": "@afkzona/telltale",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Building blocks for the transparency obligations in Article 50 of the EU AI Act: disclosure texts, web components, machine-readable XMP marking of generated images, and a hash-chained disclosure log.",
   "license": "Apache-2.0",
   "author": "MB AFKzona Group",

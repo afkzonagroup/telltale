@@ -41,7 +41,7 @@ from ._xmp import (
     scan_xmp,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "DEFAULT_MAX_INPUT_BYTES",

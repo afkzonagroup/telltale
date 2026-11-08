@@ -42,8 +42,6 @@ than this package does, the sections below say so.
 
 ## Quick start
 
-> **Before the first npm release:** `@afkzona/telltale` is published to npm from v0.2.0 ([roadmap](https://github.com/afkzonagroup/telltale/milestone/1)). Until then, build it from source: clone https://github.com/afkzonagroup/telltale, run `npm ci && npm run build && npm pack`, and install the resulting `.tgz` file wherever the steps below install `@afkzona/telltale`.
-
 ```sh
 npm install @afkzona/telltale
 ```
