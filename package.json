@@ -1,0 +1,126 @@
+{
+  "name": "@afkzona/telltale",
+  "version": "0.1.0",
+  "description": "Building blocks for the transparency obligations in Article 50 of the EU AI Act: disclosure texts, web components, machine-readable XMP marking of generated images, and a hash-chained disclosure log.",
+  "license": "Apache-2.0",
+  "author": "MB AFKzona Group",
+  "homepage": "https://github.com/afkzonagroup/telltale#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/afkzonagroup/telltale.git"
+  },
+  "bugs": {
+    "url": "https://github.com/afkzonagroup/telltale/issues"
+  },
+  "keywords": [
+    "ai-act",
+    "article-50",
+    "transparency",
+    "disclosure",
+    "xmp",
+    "iptc",
+    "digital-source-type",
+    "web-components"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "sideEffects": [
+    "./dist/components/auto.js",
+    "./dist/react/index.js",
+    "./dist/vue/index.js"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./texts": {
+      "types": "./dist/texts/index.d.ts",
+      "default": "./dist/texts/index.js"
+    },
+    "./marking": {
+      "types": "./dist/marking/index.d.ts",
+      "default": "./dist/marking/index.js"
+    },
+    "./text-marking": {
+      "types": "./dist/text-marking/index.d.ts",
+      "default": "./dist/text-marking/index.js"
+    },
+    "./log": {
+      "types": "./dist/log/index.d.ts",
+      "default": "./dist/log/index.js"
+    },
+    "./node": {
+      "types": "./dist/node/index.d.ts",
+      "default": "./dist/node/index.js"
+    },
+    "./components": {
+      "types": "./dist/components/index.d.ts",
+      "default": "./dist/components/index.js"
+    },
+    "./components/auto": {
+      "types": "./dist/components/auto.d.ts",
+      "default": "./dist/components/auto.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "default": "./dist/react/index.js"
+    },
+    "./vue": {
+      "types": "./dist/vue/index.d.ts",
+      "default": "./dist/vue/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "telltale": "./dist/node/bin.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "TRADEMARKS.md",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "node scripts/clean.mjs && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "vectors": "node scripts/generate-vectors.mjs",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "vue": ">=3.3"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.5",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
+    "@vitest/coverage-v8": "4.1.12",
+    "eslint": "10.13.0",
+    "happy-dom": "21.0.3",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0",
+    "vitest": "4.1.12",
+    "vue": "3.5.44"
+  }
+}

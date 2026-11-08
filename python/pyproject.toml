@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools==84.2.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "afkzona-telltale"
+version = "0.1.0"
+description = "Machine-readable XMP marking of AI-generated PNG, JPEG and WebP images (EU AI Act Article 50(2)). Pure Python, no dependencies."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "MB AFKzona Group" }]
+keywords = ["ai-act", "article-50", "xmp", "iptc", "digital-source-type", "provenance"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+  "Topic :: Multimedia :: Graphics",
+  "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/afkzonagroup/telltale"
+Issues = "https://github.com/afkzonagroup/telltale/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+telltale = ["py.typed"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
+files = ["src", "tests"]

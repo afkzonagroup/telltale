@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Telltale components</title>
+  <link rel="stylesheet" href="demo.css">
+  <script type="module" src="demo.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Telltale components</h1>
+
+    <section aria-labelledby="chat-h">
+      <h2 id="chat-h">Chat (Article 50(1))</h2>
+      <div class="chat">
+        <ai-disclosure dismissible id="notice"></ai-disclosure>
+        <p class="msg bot">Hello. How can I help?</p>
+        <label for="q">Your message</label>
+        <input id="q" type="text" autocomplete="off">
+      </div>
+    </section>
+
+    <section aria-labelledby="media-h">
+      <h2 id="media-h">Generated image (Article 50(4))</h2>
+      <figure class="media">
+        <img src="sample.png" alt="Blue square generated for this demo" width="320" height="240">
+        <ai-label class="overlay" kind="deepfake-image" details></ai-label>
+      </figure>
+      <p>Compact: <ai-label kind="deepfake-video" compact></ai-label></p>
+    </section>
+
+    <section aria-labelledby="text-h" lang="de">
+      <h2 id="text-h">Artikel</h2>
+      <ai-label kind="public-interest-text" details></ai-label>
+      <p>Ein Beispieltext, der mit KI erzeugt wurde.</p>
+    </section>
+
+    <section aria-labelledby="emo-h">
+      <h2 id="emo-h">Emotion recognition (Article 50(3))</h2>
+      <ai-disclosure kind="emotion-recognition"></ai-disclosure>
+    </section>
+  </main>
+</body>
+</html>
