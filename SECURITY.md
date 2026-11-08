@@ -94,7 +94,9 @@ Supported: the latest 0.x release.
   email address) are rejected on write and on verify.
 - The Node writer refuses unsafe file names and symlinks, opens with
   `O_NOFOLLOW` and `O_APPEND`, creates files with mode 0600 and verifies the
-  whole chain on open. One writer per file; there is no cross-process locking.
+  whole chain on open. An existing file writable by its group or by others is
+  refused by default (`permissions: 'fix'` restricts it to 0600). One writer per
+  file; there is no cross-process locking.
 
 **CLI**
 
