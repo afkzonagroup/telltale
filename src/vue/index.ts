@@ -11,7 +11,8 @@
  * @packageDocumentation
  */
 
-import { defineComponent, h, type PropType } from 'vue';
+import { defineComponent, h, onMounted, ref, type PropType } from 'vue';
+import { reportedShown } from '../components/ai-disclosure.js';
 import { defineTelltaleElements, type DisclosureEventDetail } from '../components/index.js';
 import type { DisclosureKind } from '../texts/index.js';
 
@@ -44,8 +45,21 @@ export const AiDisclosure = defineComponent({
     expanded: (_d: DisclosureEventDetail) => true,
   },
   setup(props, { emit }) {
+    const host = ref<HTMLElement | null>(null);
+    let shownDelivered = false;
+    // Hydration that starts after an asynchronous step: server-rendered markup
+    // upgrades and reports `telltale-shown` before Vue attaches listeners. Deliver that report once.
+    onMounted(() => {
+      if (shownDelivered) return;
+      const missed = reportedShown(host.value);
+      if (missed !== null) {
+        shownDelivered = true;
+        emit('shown', missed);
+      }
+    });
     return () =>
       h('ai-disclosure', {
+        ref: host,
         ...attrs({
           kind: props.kind,
           lang: props.lang,
@@ -56,6 +70,7 @@ export const AiDisclosure = defineComponent({
           announce: props.announce,
         }),
         'onTelltale-shown': (ev: Event) => {
+          shownDelivered = true;
           emit('shown', (ev as CustomEvent<DisclosureEventDetail>).detail);
         },
         'onTelltale-dismissed': (ev: Event) => {

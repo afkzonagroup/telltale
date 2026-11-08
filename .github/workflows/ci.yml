@@ -27,6 +27,40 @@ jobs:
       - run: npm run build
       - run: npm audit --omit=dev
 
+  # Real-browser check of the components and the React and Vue wrappers,
+  # one job per engine. Each job installs only its own browser.
+  browser:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - browser: chromium
+            install: chromium-headless-shell
+          - browser: firefox
+            install: firefox
+          - browser: webkit
+            install: webkit
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx --no-install playwright-core install --with-deps "$INSTALL"
+        env:
+          INSTALL: ${{ matrix.install }}
+      # Ubuntu 23.10+ restricts unprivileged user namespaces, which the
+      # Chromium sandbox needs. The check runs Chromium with its sandbox.
+      - if: matrix.browser == 'chromium'
+        run: if [ "$(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null || echo 0)" = "1" ]; then sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0; fi
+      - run: npm run test:browser -- "$BROWSER"
+        env:
+          BROWSER: ${{ matrix.browser }}
+
   python:
     runs-on: ubuntu-latest
     strategy:

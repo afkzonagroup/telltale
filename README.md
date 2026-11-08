@@ -159,7 +159,8 @@ or `kind="biometric-categorisation"`):
 ```
 
 With `details`, the label is a button that opens the long text; Escape and a
-click outside close it. With `compact`, only the badge is visible and the full
+click outside close it. Escape works wherever focus is, because Safari does
+not focus a button that is clicked. With `compact`, only the badge is visible and the full
 text stays available to screen readers. Put the official EU icon in the
 `icon` slot if you use it (`<img slot="icon" alt="" src="...">`); Telltale does
 not ship the icons. The Commission's icon page says use by non-signatories of
@@ -209,11 +210,23 @@ show the components unstyled but working.
 
 ### Accessibility
 
-Checked with axe-core (WCAG 2.1 A and AA rules) in Chromium, light and dark,
-collapsed and expanded, plus keyboard tests: visible focus, focus moves to
-the next control when the notice collapses, Escape closes details and returns
-focus, no horizontal scrolling at 320 px. This does not replace testing your
-page with users and assistive technologies.
+Checked with axe-core (WCAG 2.1 A and AA rules), light and dark, collapsed
+and expanded, plus keyboard tests: visible focus, focus moves to the next
+control when the notice collapses, Escape closes details and returns focus,
+no horizontal scrolling at 320 px. This does not replace testing your page
+with users and assistive technologies.
+
+### Browser support
+
+Every pull request runs the browser check in Playwright's Chromium, Firefox
+and WebKit (the engine of Safari): rendering under the strict CSP above,
+keyboard and focus, axe-core, 320 px, and React and Vue server rendering
+followed by hydration. All checks pass in all three engines with Playwright
+1.64.1 (Chromium 156, Firefox 157, WebKit 27.2). One difference is built into
+the test: Safari and WebKit on macOS move Tab between text fields only by
+default, so the keyboard tests press Option-Tab there, as a Safari user with
+that default does. Run it yourself with `npm run test:browser`
+([CONTRIBUTING.md](CONTRIBUTING.md#browser-check)).
 
 ## React
 
@@ -465,7 +478,8 @@ All law-enforcement exceptions in Article 50 are out of scope.
 
 None at runtime. React and Vue are optional peer dependencies, needed only for
 the wrappers. Development tools (TypeScript, ESLint, Vitest, happy-dom, React,
-Vue) are pinned in `package-lock.json`. The Python package uses only the
+Vue, and for the browser check playwright-core, axe-core and esbuild) are
+pinned in `package-lock.json`. The Python package uses only the
 standard library; `mypy` is used in development.
 
 ## Security
