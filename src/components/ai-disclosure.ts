@@ -17,6 +17,22 @@ export interface DisclosureEventDetail {
   readonly text: string;
 }
 
+/**
+ * The `telltale-shown` detail an `<ai-disclosure>` already reported, or null.
+ *
+ * For the framework wrappers: when they hydrate server-rendered markup, the
+ * element upgrades and reports `telltale-shown` before the framework has
+ * attached its listeners. Reads the public `lastShown` property, so it also
+ * works for an element registered by another copy of this package.
+ *
+ * @internal
+ */
+export function reportedShown(node: Element | null): DisclosureEventDetail | null {
+  if (node === null || !('lastShown' in node)) return null;
+  const detail = node.lastShown;
+  return typeof detail === 'object' && detail !== null ? (detail as DisclosureEventDetail) : null;
+}
+
 const OBSERVED = ['kind', 'lang', 'text', 'long-text', 'dismissible', 'remember', 'announce'] as const;
 
 /**

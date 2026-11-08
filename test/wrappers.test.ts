@@ -6,10 +6,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { act, createElement } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
-import { createApp, h, nextTick, ref } from 'vue';
-import { afterEach, describe, expect, it } from 'vitest';
+import { act, createElement, StrictMode } from 'react';
+import { createRoot, hydrateRoot, type Root } from 'react-dom/client';
+import { renderToString as renderReact } from 'react-dom/server';
+import { createApp, createSSRApp, h, nextTick, ref } from 'vue';
+import { renderToString as renderVue } from 'vue/server-renderer';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DisclosureEventDetail } from '../src/components/index.js';
 import { AiDisclosure as ReactDisclosure, AiLabel as ReactLabel } from '../src/react/index.js';
 import { AiDisclosure as VueDisclosure, AiLabel as VueLabel } from '../src/vue/index.js';
@@ -88,6 +90,26 @@ describe('React wrapper', () => {
     });
     expect(toggles).toEqual([true]);
   });
+  // Regression: on hydration the server-rendered element upgrades and reports
+  // `telltale-shown` before React attaches listeners, so onShown never ran.
+  it('calls onShown once when hydrating server-rendered markup (Strict Mode)', async () => {
+    const shown: DisclosureEventDetail[] = [];
+    const tree = () => createElement(StrictMode, null, createElement(ReactDisclosure, { dismissible: true, onShown: (d) => shown.push(d) }));
+    const c = container();
+    c.innerHTML = renderReact(tree());
+    const el = c.querySelector('ai-disclosure')!;
+    await Promise.resolve();
+    expect(el.lastShown).not.toBeNull();
+    const errors = vi.spyOn(console, 'error');
+    await act(async () => {
+      root = hydrateRoot(c, tree());
+      await Promise.resolve();
+    });
+    expect(c.querySelector('ai-disclosure')).toBe(el);
+    expect(shown).toEqual([{ kind: 'chatbot', lang: 'en', variant: 'long', text: getDisclosure('chatbot', 'en').long }]);
+    expect(errors).not.toHaveBeenCalled();
+    errors.mockRestore();
+  });
 });
 
 describe('Vue wrapper', () => {
@@ -127,5 +149,25 @@ describe('Vue wrapper', () => {
     el.show();
     expect(toggles).toEqual([true]);
     app.unmount();
+  });
+
+  // Regression: hydration that starts after an asynchronous step finds an
+  // element that already reported `telltale-shown`.
+  it('emits shown once when hydrating server-rendered markup, also after an asynchronous step', async () => {
+    for (const delayed of [false, true]) {
+      const shown: DisclosureEventDetail[] = [];
+      const component = { render: () => h(VueDisclosure, { dismissible: true, lang: 'de', onShown: (d: DisclosureEventDetail) => shown.push(d) }) };
+      const c = container();
+      c.innerHTML = await renderVue(createSSRApp(component));
+      const el = c.querySelector('ai-disclosure')!;
+      if (delayed) await Promise.resolve();
+      const app = createSSRApp(component);
+      app.mount(c);
+      await nextTick();
+      await Promise.resolve();
+      expect(c.querySelector('ai-disclosure')).toBe(el);
+      expect(shown, `delayed: ${delayed}`).toEqual([{ kind: 'chatbot', lang: 'de', variant: 'long', text: getDisclosure('chatbot', 'de').long }]);
+      app.unmount();
+    }
   });
 });

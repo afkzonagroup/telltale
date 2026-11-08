@@ -14,6 +14,7 @@
  */
 
 import { createElement, useEffect, useLayoutEffect, useRef, type ReactElement, type ReactNode } from 'react';
+import { reportedShown } from '../components/ai-disclosure.js';
 import { defineTelltaleElements, type DisclosureEventDetail } from '../components/index.js';
 import type { DisclosureKind } from '../texts/index.js';
 
@@ -35,6 +36,8 @@ function attrs(input: Readonly<Record<string, string | boolean | undefined>>): A
 
 function useEvents(ref: { readonly current: HTMLElement | null }, handlers: Readonly<Record<string, ((detail: never) => void) | undefined>>): void {
   const latest = useRef(handlers);
+  // Whether `telltale-shown` reached this wrapper; kept across Strict Mode effect re-runs.
+  const shownDelivered = useRef(false);
   // Keep the newest handlers without re-subscribing; refs are updated in an effect, not during render.
   useIsomorphicLayoutEffect(() => {
     latest.current = handlers;
@@ -44,10 +47,20 @@ function useEvents(ref: { readonly current: HTMLElement | null }, handlers: Read
     if (!el) return undefined;
     const names = Object.keys(latest.current);
     const listener = (ev: Event): void => {
+      if (ev.type === 'telltale-shown') shownDelivered.current = true;
       const h = latest.current[ev.type];
       if (h) h((ev as CustomEvent).detail as never);
     };
     for (const n of names) el.addEventListener(n, listener);
+    // Hydration: server-rendered markup upgrades and reports `telltale-shown`
+    // before React attaches listeners. Deliver that report once.
+    if (names.includes('telltale-shown') && !shownDelivered.current) {
+      const missed = reportedShown(el);
+      if (missed !== null) {
+        shownDelivered.current = true;
+        latest.current['telltale-shown']?.(missed as never);
+      }
+    }
     return () => {
       for (const n of names) el.removeEventListener(n, listener);
     };
